@@ -1,12 +1,24 @@
 import React, { Component } from 'react';
-import { Text, StyleSheet, View, TouchableHighlight } from 'react-native';
-import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
+import { StyleSheet, View, TouchableHighlight } from 'react-native';
+// import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
+import Stopwatch from '../components/StopWatch';
+import { Avatar } from 'react-native-elements';
+import {
+  Body,
+  Card,
+  Container,
+  Content,
+  CardItem,
+  Header,
+  Left,
+  Text,
+} from 'native-base';
 
-export default class Clock extends Component {
+class Clock extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      clockStart: false,
+      clockStart: true,
       clockReset: false,
     };
     this.toggleClock = this.toggleClock.bind(this);
@@ -19,6 +31,8 @@ export default class Clock extends Component {
 
   resetClock() {
     this.setState({clockStart: false, clockReset: true});
+    this.setState({clockStart: true, clockReset: false});
+    alert('clock reset')
   }
 
   getFormattedTime(time) {
@@ -26,17 +40,27 @@ export default class Clock extends Component {
   }
 
   render() {
+
+    let foo = this.state.clockStart ? styles.active : ''
+
     return (
-      <TouchableHighlight onPress={this.toggleClock} onLongPress={this.resetClock}>
-        <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={styles.name}>{this.props.name}</Text>
-          <Stopwatch start={this.state.clockStart}
-            reset={this.state.clockReset}
-            options={{container: styles.clockContainer, text: [styles.clockText, this.state.clockStart && styles.active]}}
-            getTime={this.getFormattedTime}
-          />
-      </View>
-      </TouchableHighlight>
+      <Card>
+        <CardItem
+          button
+          onLongPress={this.resetClock}
+        >
+          <Left>
+            <Avatar medium rounded title={this.props.name}/>
+          </Left>
+          <Body>
+            <Stopwatch start={this.state.clockStart}
+              reset={this.state.clockReset}
+              options={{container: styles.clockContainer, text: styles.clockText}}
+              getTime={this.getFormattedTime}
+            />
+          </Body>
+        </CardItem>
+      </Card>
     )
   }
 }
@@ -51,7 +75,7 @@ const styles = StyleSheet.create({
   },
   clockText: {
     flex: 1,
-    fontSize: 42,
+    fontSize: 30,
     fontWeight: 'bold',
     color: 'steelblue',
   },
@@ -59,3 +83,5 @@ const styles = StyleSheet.create({
     color: 'red'
   },
 })
+
+export default Clock;

@@ -1,57 +1,46 @@
-import React, { Component } from 'react';
-import {
-  AsyncStorage,
-  View,
-  ListView,
-  StyleSheet,
-} from 'react-native';
 // import { Constants } from 'expo';
 // import { Header } from 'react-native-elements';
-import { Font, AppLoading } from "expo";
+import { AppLoading, Font } from "expo";
 import {
-  Container,
-  Header,
-  Title,
-  Content,
-  Footer,
-  FooterTab,
+  Body,
   Button,
+  Container,
+  Content,
+  Header,
+  Icon,
   Left,
   List,
-  ListItem,
   Right,
-  Body,
-  Icon,
   Root,
-  Text,
   StyleProvider,
-} from 'native-base';
-import Clock from './components/Clock';
-
+  Title
+} from "native-base";
+import React, { Component } from "react";
+import { ListView, StyleSheet } from "react-native";
+import Clock from "./components/Clock";
 // material native-base theme
-import getTheme from './native-base-theme/components';
-import material from './native-base-theme/variables/material';
-import platform from './native-base-theme/variables/platform';
-// import Storage from 'react-native-storage';
+import getTheme from "./native-base-theme/components";
+import platform from "./native-base-theme/variables/platform";
 
+// import Storage from 'react-native-storage';
 
 // var storage = new Storage({
 //   storageBackend: AsyncStorage,
 // })
 //
 // global.storage = storage
-const defaultClocks = [ '🍼', '💤', '💩', '🚼', ]
+const defaultClocks = ["🍼", "💤", "💩", "🚼"];
 
 export default class App extends Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
     this.state = {
       loading: true,
-      listViewData: defaultClocks,
-    }
+      listViewData: defaultClocks
+    };
 
     this.addClock = this.addClock.bind(this);
   }
@@ -65,14 +54,14 @@ export default class App extends Component {
   }
 
   handleAlert() {
-    alert("What is going on")
+    alert("What is going on");
   }
 
   addClock() {
-    let newClock = '🌈'
-    let clocksList = this.state.listViewData
-    clocksList.push(newClock)
-    this.setState({listViewData: clocksList})
+    let newClock = "🌈";
+    let clocksList = this.state.listViewData;
+    clocksList.push(newClock);
+    this.setState({ listViewData: clocksList });
   }
 
   deleteRow(secId, rowId, rowMap) {
@@ -87,13 +76,15 @@ export default class App extends Component {
   // }
 
   render() {
-    const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+    const ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2
+    });
     if (this.state.loading) {
       return (
         <Root>
           <AppLoading />
         </Root>
-      )
+      );
     }
     return (
       <StyleProvider style={getTheme(platform)}>
@@ -101,7 +92,7 @@ export default class App extends Component {
           <Header>
             <Left>
               <Button transparent onPress={this.handleAlert}>
-                <Icon name='help'/>
+                <Icon name="help" />
               </Button>
             </Left>
             <Body>
@@ -109,7 +100,7 @@ export default class App extends Component {
             </Body>
             <Right>
               <Button transparent onPress={this.addClock}>
-                <Icon name='add'/>
+                <Icon name="add" />
               </Button>
             </Right>
           </Header>
@@ -120,36 +111,38 @@ export default class App extends Component {
             }
             <List
               dataSource={this.ds.cloneWithRows(this.state.listViewData)}
-              renderRow={data =>
-                <Clock name={data}/>
-              }
-              renderLeftHiddenRow={data =>
+              renderRow={data => <Clock name={data} />}
+              renderLeftHiddenRow={data => (
                 <Button full onPress={() => alert(data)}>
                   <Icon active name="information-circle" />
                 </Button>
-              }
-              renderRightHiddenRow={(data, secId, rowId, rowMap) =>
-                <Button full danger onPress={_ => this.deleteRow(secId, rowId, rowMap)}>
+              )}
+              renderRightHiddenRow={(data, secId, rowId, rowMap) => (
+                <Button
+                  full
+                  danger
+                  onPress={_ => this.deleteRow(secId, rowId, rowMap)}
+                >
                   <Icon active name="trash" />
                 </Button>
-              }
+              )}
               leftOpenValue={75}
               rightOpenValue={-75}
             />
           </Content>
         </Container>
       </StyleProvider>
-    )
+    );
   }
 }
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: 'cadetblue',
+    backgroundColor: "cadetblue"
   },
   container: {
     flex: 1,
-    alignItems: 'stretch',
-    backgroundColor: 'gainsboro',
-  },
-})
+    alignItems: "stretch",
+    backgroundColor: "gainsboro"
+  }
+});

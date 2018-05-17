@@ -1,18 +1,20 @@
+// modified version of 'react-native-stopwatch-timer'
+
 import React, { Component } from 'react';
-import { StyleSheet, View, TouchableHighlight } from 'react-native';
-// import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
-import Stopwatch from '../components/StopWatch';
-import { Avatar } from 'react-native-elements';
+import { StyleSheet } from 'react-native';
 import {
   Body,
-  Card,
   Container,
   Content,
-  CardItem,
-  Header,
   Left,
+  List,
+  ListItem,
+  Right,
+  Toast,
   Text,
 } from 'native-base';
+
+import Stopwatch from '../components/StopWatch';
 
 class Clock extends Component {
   constructor(props) {
@@ -44,23 +46,18 @@ class Clock extends Component {
     let foo = this.state.clockStart ? styles.active : ''
 
     return (
-      <Card>
-        <CardItem
-          button
-          onLongPress={this.resetClock}
-        >
-          <Left>
-            <Avatar medium rounded title={this.props.name}/>
-          </Left>
-          <Body>
-            <Stopwatch start={this.state.clockStart}
-              reset={this.state.clockReset}
-              options={{container: styles.clockContainer, text: styles.clockText}}
-              getTime={this.getFormattedTime}
-            />
-          </Body>
-        </CardItem>
-      </Card>
+      <ListItem button onLongPress={this.resetClock}>
+        <Left>
+          <Text>{this.props.name}</Text>
+        </Left>
+        <Body>
+          <Stopwatch start={this.state.clockStart}
+            reset={this.state.clockReset}
+            options={{container: styles.clockContainer, text: styles.clockText}}
+            getTime={this.getFormattedTime}
+          />
+        </Body>
+      </ListItem>
     )
   }
 }

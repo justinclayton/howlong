@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {
   AsyncStorage,
   View,
-  FlatList,
+  ListView,
   StyleSheet,
 } from 'react-native';
 // import { Constants } from 'expo';
@@ -17,6 +17,8 @@ import {
   FooterTab,
   Button,
   Left,
+  List,
+  ListItem,
   Right,
   Body,
   Icon,
@@ -38,20 +40,20 @@ import platform from './native-base-theme/variables/platform';
 // })
 //
 // global.storage = storage
+const defaultClocks = [ '🍼', '💤', '💩', '🚼', ]
 
 export default class App extends Component {
   constructor(props) {
     super(props)
 
+    this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+
     this.state = {
       loading: true,
-      clocks: [
-        {key: '🍼'},
-        {key: '💤'},
-        {key: '💩'},
-        {key: '🚼'},
-      ],
+      listViewData: defaultClocks,
     }
+
+    this.addClock = this.addClock.bind(this);
   }
 
   async componentWillMount() {
@@ -66,7 +68,26 @@ export default class App extends Component {
     alert("What is going on")
   }
 
+  addClock() {
+    let newClock = '🌈'
+    let clocksList = this.state.listViewData
+    clocksList.push(newClock)
+    this.setState({listViewData: clocksList})
+  }
+
+  deleteRow(secId, rowId, rowMap) {
+    rowMap[`${secId}${rowId}`].props.closeRow();
+    const newData = [...this.state.listViewData];
+    newData.splice(rowId, 1);
+    this.setState({ listViewData: newData });
+  }
+
+  // deleteRow(secId, rowId, rowMap) {
+  //   alert("would delete row")
+  // }
+
   render() {
+    const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
     if (this.state.loading) {
       return (
         <Root>
@@ -87,15 +108,33 @@ export default class App extends Component {
               <Title>How Long</Title>
             </Body>
             <Right>
-              <Button transparent onPress={this.handleAlert}>
+              <Button transparent onPress={this.addClock}>
                 <Icon name='add'/>
               </Button>
             </Right>
           </Header>
           <Content>
-            <FlatList
-              data={this.state.clocks}
-              renderItem={ ( {item} ) => <Clock name={ item.key }/> }
+            {
+              // handy tip: if you want to rerender updated state, make it props to a component.
+              // this might mean you need to make more components than you thought, but that's fine.
+            }
+            <List
+              dataSource={this.ds.cloneWithRows(this.state.listViewData)}
+              renderRow={data =>
+                <Clock name={data}/>
+              }
+              renderLeftHiddenRow={data =>
+                <Button full onPress={() => alert(data)}>
+                  <Icon active name="information-circle" />
+                </Button>
+              }
+              renderRightHiddenRow={(data, secId, rowId, rowMap) =>
+                <Button full danger onPress={_ => this.deleteRow(secId, rowId, rowMap)}>
+                  <Icon active name="trash" />
+                </Button>
+              }
+              leftOpenValue={75}
+              rightOpenValue={-75}
             />
           </Content>
         </Container>

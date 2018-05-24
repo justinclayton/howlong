@@ -112,11 +112,6 @@ export default class App extends Component {
             <List
               dataSource={this.ds.cloneWithRows(this.state.listViewData)}
               renderRow={data => <Clock name={data} />}
-              renderLeftHiddenRow={data => (
-                <Button full onPress={() => alert(data)}>
-                  <Icon active name="information-circle" />
-                </Button>
-              )}
               renderRightHiddenRow={(data, secId, rowId, rowMap) => (
                 <Button
                   full
@@ -126,7 +121,6 @@ export default class App extends Component {
                   <Icon active name="trash" />
                 </Button>
               )}
-              leftOpenValue={75}
               rightOpenValue={-75}
             />
           </Content>

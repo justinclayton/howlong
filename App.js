@@ -1,127 +1,96 @@
-// import { Constants } from 'expo';
-// import { Header } from 'react-native-elements';
-import { AppLoading, Font } from "expo";
-import {
-  Body,
-  Button,
-  Container,
-  Content,
-  Header,
-  Icon,
-  Left,
-  List,
-  Right,
-  Root,
-  StyleProvider,
-  Title
-} from "native-base";
+import { Container, Content, List, StyleProvider } from "native-base";
 import React, { Component } from "react";
-import { ListView, StyleSheet } from "react-native";
+import { AsyncStorage, StyleSheet } from "react-native";
+import AddBox from "./components/AddBox";
 import Clock from "./components/Clock";
+import Top from "./components/Top";
 // material native-base theme
 import getTheme from "./native-base-theme/components";
 import platform from "./native-base-theme/variables/platform";
 
-// import Storage from 'react-native-storage';
-
-// var storage = new Storage({
-//   storageBackend: AsyncStorage,
-// })
-//
-// global.storage = storage
-const defaultClocks = ["🍼", "💤", "💩", "🚼"];
+const CLOCKS_KEY = "Clocks";
 
 export default class App extends Component {
+  state = { clocks: [] };
+
   constructor(props) {
     super(props);
 
-    this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-
-    this.state = {
-      loading: true,
-      listViewData: defaultClocks
-    };
-
-    this.addClock = this.addClock.bind(this);
+    this.setInitialState = this.setInitialState.bind(this);
   }
 
-  async componentWillMount() {
-    await Font.loadAsync({
-      Roboto: require("native-base/Fonts/Roboto.ttf"),
-      Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf")
-    });
-    this.setState({ loading: false });
+  componentDidMount() {
+    this.setInitialState();
   }
 
-  handleAlert() {
-    alert("What is going on");
+  setInitialState() {
+    console.log(`starting setInitialState()`);
+    let initialState = this.read();
+    var clocks;
+    console.log(`initial storage state is ${JSON.stringify(initialState)}`);
+    clocks = ["Bums"];
+    this.write(clocks);
+    console.log(`setting react state to ${clocks}`);
+    this.setState({ clocks: clocks });
+    console.log(`leaving setInitialState()`);
   }
 
-  addClock() {
-    let newClock = "🌈";
-    let clocksList = this.state.listViewData;
-    clocksList.push(newClock);
-    this.setState({ listViewData: clocksList });
+  async read() {
+    console.log(`starting read()`);
+    let data = await AsyncStorage.getItem(CLOCKS_KEY);
+    console.log(`read(): data is ${JSON.stringify(data)}`);
+    let jsonData = JSON.parse(data);
+    console.log(`read(): jsonData is ${jsonData}`);
+    console.log(`leaving read()`);
+    return jsonData;
   }
 
-  deleteRow(secId, rowId, rowMap) {
-    rowMap[`${secId}${rowId}`].props.closeRow();
-    const newData = [...this.state.listViewData];
-    newData.splice(rowId, 1);
-    this.setState({ listViewData: newData });
+  async write(data) {
+    console.log(`starting write()`);
+    try {
+      await AsyncStorage.setItem(CLOCKS_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error(error);
+    }
+    console.log(`leaving write()`);
   }
 
-  // deleteRow(secId, rowId, rowMap) {
-  //   alert("would delete row")
-  // }
+  async addClock(text) {
+    console.log(`starting addClock()`);
+    console.log(`addClock(): text is ${text}`);
+    if (text != "") {
+      this.setState({ textValue: "" });
+      let clockList = await this.read();
+      console.log(typeof clockList);
+      console.log(`addClock(): clockList is ${clockList}`);
+      let newClockList = clockList.push(text);
+      console.log(`addClock(): newClockList is ${newClockList}`);
+      this.setState({ clocks: newClockList });
+      this.write(newClockList);
+    }
+    console.log(`leaving addClock()`);
+  }
+
+  onHelp() {
+    alert(`resetting storage`);
+    this.setState({ clocks: [] });
+    this.write([]);
+  }
 
   render() {
-    const ds = new ListView.DataSource({
-      rowHasChanged: (r1, r2) => r1 !== r2
-    });
-    if (this.state.loading) {
-      return (
-        <Root>
-          <AppLoading />
-        </Root>
-      );
-    }
     return (
       <StyleProvider style={getTheme(platform)}>
         <Container>
-          <Header>
-            <Left>
-              <Button transparent onPress={this.handleAlert}>
-                <Icon name="help" />
-              </Button>
-            </Left>
-            <Body>
-              <Title>How Long</Title>
-            </Body>
-            <Right>
-              <Button transparent onPress={this.addClock}>
-                <Icon name="add" />
-              </Button>
-            </Right>
-          </Header>
+          <Top onHelp={() => this.onHelp()} onAdd={() => this.addClock("R")} />
           <Content>
-            {
-              // handy tip: if you want to rerender updated state, make it props to a component.
-              // this might mean you need to make more components than you thought, but that's fine.
-            }
+            <AddBox
+              onSubmitEditing={() => this.addClock(this.state.textValue)}
+              onChangeText={text => this.setState({ textValue: text })}
+              onAdd={() => this.addClock(this.state.textValue)}
+            />
             <List
-              dataSource={this.ds.cloneWithRows(this.state.listViewData)}
-              renderRow={data => <Clock name={data} />}
-              renderRightHiddenRow={(data, secId, rowId, rowMap) => (
-                <Button
-                  full
-                  danger
-                  onPress={_ => this.deleteRow(secId, rowId, rowMap)}
-                >
-                  <Icon active name="trash" />
-                </Button>
-              )}
-              rightOpenValue={-75}
+              dataArray={this.state.clocks}
+              renderRow={clock => <Clock name={clock} />}
             />
           </Content>
         </Container>

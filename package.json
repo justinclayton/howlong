@@ -20,11 +20,15 @@
   },
   "dependencies": {
     "expo": "^27.0.1",
+    "json-circular-stringify": "0.0.1",
+    "json-stringify-safe": "^5.0.1",
     "native-base": "~2.4.4",
     "react": "16.3.1",
-    "react-native": "~0.55.2",
+    "react-native": "^0.55.4",
+    "react-native-dialog": "^4.0.0",
     "react-native-elements": "~0.18.5",
     "react-native-stopwatch-timer": "~0.0.20",
-    "react-native-storage": "~0.2.2"
+    "react-native-storage": "~0.2.2",
+    "react-native-tableview": "^2.2.0"
   }
 }

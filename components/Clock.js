@@ -31,10 +31,12 @@ class Clock extends Component {
   }
 
   render() {
-    let foo = this.state.clockStart ? styles.active : "";
+    let clockTextStyle = this.state.clockStart
+      ? [styles.clockText]
+      : [styles.clockText, styles.stopped];
 
     return (
-      <ListItem button onLongPress={this.resetClock}>
+      <ListItem button onPress={this.toggleClock} onLongPress={this.resetClock}>
         <Left>
           <Text>{this.props.name}</Text>
         </Left>
@@ -44,7 +46,7 @@ class Clock extends Component {
             reset={this.state.clockReset}
             options={{
               container: styles.clockContainer,
-              text: styles.clockText
+              text: clockTextStyle
             }}
             getTime={this.getFormattedTime}
           />
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "steelblue"
   },
-  active: {
+  stopped: {
     color: "red"
   }
 });

@@ -1,96 +1,140 @@
-import { Container, Content, List, StyleProvider } from "native-base";
+import {
+  Body,
+  Button,
+  Container,
+  Content,
+  Header,
+  Icon,
+  Input,
+  Item,
+  Left,
+  List,
+  Right,
+  StyleProvider,
+  Title
+} from "native-base";
 import React, { Component } from "react";
-import { AsyncStorage, StyleSheet } from "react-native";
-import AddBox from "./components/AddBox";
+import { AsyncStorage, Keyboard, Platform, StyleSheet } from "react-native";
 import Clock from "./components/Clock";
-import Top from "./components/Top";
 // material native-base theme
 import getTheme from "./native-base-theme/components";
 import platform from "./native-base-theme/variables/platform";
 
 const CLOCKS_KEY = "Clocks";
+const isAndroid = Platform.OS == "android";
+const viewPadding = 10;
+
+let Clocks = {
+  convertToArrayOfObject(clocks, callback) {
+    return callback(
+      clocks
+        ? clocks.split("||").map((clock, i) => ({ key: i, text: clock }))
+        : []
+    );
+  },
+  convertToStringWithSeparators(clocks) {
+    return clocks.map(clock => clock.text).join("||");
+  },
+  all(callback) {
+    return AsyncStorage.getItem("CLOCKS", (err, clocks) =>
+      this.convertToArrayOfObject(clocks, callback)
+    );
+  },
+  save(clocks) {
+    AsyncStorage.setItem("CLOCKS", this.convertToStringWithSeparators(clocks));
+  }
+};
 
 export default class App extends Component {
-  state = { clocks: [] };
+  state = { clocks: [], text: "" };
 
-  constructor(props) {
-    super(props);
+  changeTextHandler = text => {
+    this.setState({ text: text });
+  };
 
-    this.setInitialState = this.setInitialState.bind(this);
+  addClock = () => {
+    let notEmpty = this.state.text.trim().length > 0;
+
+    if (notEmpty) {
+      this.setState(
+        prevState => {
+          let { clocks, text } = prevState;
+          return {
+            clocks: clocks.concat({
+              key: clocks.length,
+              text: text
+            }),
+            text: ""
+          };
+        },
+        () => Clocks.save(this.state.clocks)
+      );
+    }
+  };
+
+  deleteClock = i => {
+    this.setState(
+      prevState => {
+        let clocks = prevState.clocks.slice();
+
+        clocks.splice(i, 1);
+
+        return { clocks: clocks };
+      },
+      () => Clocks.save(this.state.clocks)
+    );
+  };
+
+  deleteAllClocks() {
+    alert(`resetting local storage`);
+    this.setState({ clocks: [], text: "" });
+    Clocks.save(this.state.clocks);
   }
 
   componentDidMount() {
-    this.setInitialState();
-  }
+    Keyboard.addListener(
+      isAndroid ? "keyboardDidShow" : "keyboardWillShow",
+      e =>
+        this.setState({
+          viewMargin: e.endCoordinates.height + viewPadding
+        })
+    );
 
-  setInitialState() {
-    console.log(`starting setInitialState()`);
-    let initialState = this.read();
-    var clocks;
-    console.log(`initial storage state is ${JSON.stringify(initialState)}`);
-    clocks = ["Bums"];
-    this.write(clocks);
-    console.log(`setting react state to ${clocks}`);
-    this.setState({ clocks: clocks });
-    console.log(`leaving setInitialState()`);
-  }
+    Keyboard.addListener(
+      isAndroid ? "keyboardDidHide" : "keyboardWillHide",
+      () => this.setState({ viewMargin: viewPadding })
+    );
 
-  async read() {
-    console.log(`starting read()`);
-    let data = await AsyncStorage.getItem(CLOCKS_KEY);
-    console.log(`read(): data is ${JSON.stringify(data)}`);
-    let jsonData = JSON.parse(data);
-    console.log(`read(): jsonData is ${jsonData}`);
-    console.log(`leaving read()`);
-    return jsonData;
-  }
-
-  async write(data) {
-    console.log(`starting write()`);
-    try {
-      await AsyncStorage.setItem(CLOCKS_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error(error);
-    }
-    console.log(`leaving write()`);
-  }
-
-  async addClock(text) {
-    console.log(`starting addClock()`);
-    console.log(`addClock(): text is ${text}`);
-    if (text != "") {
-      this.setState({ textValue: "" });
-      let clockList = await this.read();
-      console.log(typeof clockList);
-      console.log(`addClock(): clockList is ${clockList}`);
-      let newClockList = clockList.push(text);
-      console.log(`addClock(): newClockList is ${newClockList}`);
-      this.setState({ clocks: newClockList });
-      this.write(newClockList);
-    }
-    console.log(`leaving addClock()`);
-  }
-
-  onHelp() {
-    alert(`resetting storage`);
-    this.setState({ clocks: [] });
-    this.write([]);
+    Clocks.all(clocks => this.setState({ clocks: clocks || [] }));
   }
 
   render() {
     return (
       <StyleProvider style={getTheme(platform)}>
         <Container>
-          <Top onHelp={() => this.onHelp()} onAdd={() => this.addClock("R")} />
+          <Header>
+            <Left>
+              <Button transparent onPress={() => this.deleteAllClocks()}>
+                <Icon name="help" />
+              </Button>
+            </Left>
+            <Body>
+              <Title>How Long</Title>
+            </Body>
+            <Right />
+          </Header>
           <Content>
-            <AddBox
-              onSubmitEditing={() => this.addClock(this.state.textValue)}
-              onChangeText={text => this.setState({ textValue: text })}
-              onAdd={() => this.addClock(this.state.textValue)}
-            />
+            <Item rounded>
+              <Input
+                placeholder="Clock Name"
+                clearButtonMode="always"
+                onSubmitEditing={() => this.addClock()}
+                onChangeText={text => this.setState({ text: text })}
+              />
+            </Item>
             <List
               dataArray={this.state.clocks}
-              renderRow={clock => <Clock name={clock} />}
+              renderRow={clock => <Clock name={clock.text} />}
             />
           </Content>
         </Container>

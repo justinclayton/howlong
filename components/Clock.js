@@ -44,10 +44,7 @@ class Clock extends Component {
           <Stopwatch
             start={this.state.clockStart}
             reset={this.state.clockReset}
-            options={{
-              container: styles.clockContainer,
-              text: clockTextStyle
-            }}
+            options={{ container: styles.clockContainer, text: clockTextStyle }}
             getTime={this.getFormattedTime}
           />
         </Body>
